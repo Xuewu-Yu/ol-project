@@ -1,0 +1,47 @@
+@import "node_modules/ol/ol.css";
+
+@font-face {
+  font-family: 'TaoBaoMaiCaiTi';
+  src: url('/src/assets/fonts/TaoBaoMaiCaiTi-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DS';
+  src: url('/src/assets/fonts/DS-DIGIT.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "iconfont";
+  /* Project id 4903153 */
+  src: url('/src/assets/fonts/iconfont.woff2?t=1745396360907') format('woff2'),
+    url('/src/assets/fonts/iconfont.woff?t=1745396360907') format('woff'),
+    url('/src/assets/fonts/iconfont.ttf?t=1745396360907') format('truetype');
+  font-display: swap;
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-quanping:before {
+  content: "\eb11";
+}
+.icon-chengshi:before {
+  content: "\e659";
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.map-edit-drawer {
+  inset: 0 0 0 80% !important;
+}
