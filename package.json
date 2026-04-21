@@ -10,12 +10,15 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "colormap": "^2.3.2",
+    "echarts": "^6.0.0",
     "element-plus": "^2.13.6",
     "ol": "^10.8.0",
     "vue": "^3.5.32",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@types/colormap": "^2.3.4",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^24.12.2",
     "@vitejs/plugin-vue": "^6.0.5",

@@ -13,8 +13,12 @@ import {
   FullScreen,
   OverviewMap,
 } from "ol/control";
+
+import { getArea } from 'ol/sphere'
 import { ElMessage } from 'element-plus'
 import { Translate, Draw } from "ol/interaction";
+import { fromCircle } from "ol/geom/Polygon";
+
 import {
   TDT_TOKEN,
   ZJS_CENTER,
@@ -28,7 +32,7 @@ import { getMonitors, updateMonitor, deleteMonitor, createMonitor } from '@/api.
 import { monitorGeoJSON } from '@/utils'
 
 import type { Monitor } from '@/types.ts'
-import type { Geometry, Point } from 'ol/geom'
+import type { Geometry, Point, Circle as GeomCircle } from 'ol/geom'
 import type { FeatureLike } from "ol/Feature";
 import type { FormInstance, FormRules } from "element-plus";
 
@@ -73,7 +77,7 @@ const drawerRules = reactive<FormRules>({
   monitorArea: [
     {required: true, message: '请输入监测面积', trigger: 'blur'},
     {
-      validator: (rule, value, callback) => {
+      validator: (_rule, value, callback) => {
         if (value === 0) {
           callback(new Error('检测面积不能为0'))
         } else if (value > drawerForm.allArea) {
@@ -88,7 +92,7 @@ const drawerRules = reactive<FormRules>({
   allArea: [
     {required: true, message: '请输入总面积', trigger: 'blur'},
     {
-      validator: (rule, value, callback) => {
+      validator: (_rule, value, callback) => {
         if (value === 0) {
           callback(new Error('监测面积不能为0'))
         } else {
@@ -206,7 +210,7 @@ const geometryLayer = new VectorLayer({
       image: new Circle({
         radius: 10,
         fill: new Fill({
-          color: '#FFF0080'
+          color: '#FFFF0080'
         }),
         stroke: new Stroke({
           color: '#FF0000',
@@ -214,7 +218,7 @@ const geometryLayer = new VectorLayer({
         })
       }),
       fill: new Fill({
-        color: '#FFF0080'
+        color: '#FFFF0080'
       }),
       stroke: new Stroke({
         color: '#FF0000',
@@ -253,6 +257,23 @@ const activeCityFeature = (
 // 点击切换图层
 const handleClickFeature = (e: MapBrowserEvent) => {
   if (isDrawing) return
+
+  // 点击清除图层
+  const geometryFeature = map.forEachFeatureAtPixel(
+    e.pixel,
+    (feat) => {
+      return feat instanceof Feature ? feat : null;
+    },
+    {
+      layerFilter: (layer) => layer === geometryLayer,
+    }
+  );
+  if (geometryFeature && nowGeometry.value === '清除') {
+    geometryLayer.getSource()?.removeFeature(geometryFeature)
+    nowGeometry.value = '绘制'
+    return
+  }
+  // 监测点
   const monitorFeature = map.forEachFeatureAtPixel(
     e.pixel,
     (feat) => {
@@ -289,11 +310,14 @@ const handleClickFeature = (e: MapBrowserEvent) => {
   }
 };
 
+// 切换城市
 const handleToolCity = (command: string) => {
   const cityFeatures = cityLayer.getSource()?.getFeatures() || [];
   const cityFeature = cityFeatures.find((item) => item.get("name") === command);
   cityFeature && activeCityFeature(cityFeatures, cityFeature, command);
 };
+
+// 绘制图层
 const handleToolGeometry = (command: string) => {
   nowGeometry.value = command
   const type = GEOMETRY_TYPES.find(item => item.name === command)?.value
@@ -302,6 +326,23 @@ const handleToolGeometry = (command: string) => {
     const drawGeometryInteraction = new Draw({
       source: geometryLayer.getSource() as Vector<Feature<Geometry>>,
       type,
+    })
+    map.addInteraction(drawGeometryInteraction)
+    drawGeometryInteraction.on('drawend', (e) => {
+      const geometry = e.feature.getGeometry()
+      let area = 0;
+      if (geometry && geometry.getType() === 'Circle') {// 圆形面积
+        const polygon = fromCircle(geometry as GeomCircle, 64)
+        area = getArea(polygon)
+      } else if (geometry?.getType() === 'Polygon') {// 多边形面积
+        area = getArea(geometry)
+      }
+      e.feature.set('area', (area / 1000000).toFixed(2) + 'km²')
+      map.removeInteraction(drawGeometryInteraction)
+      nowGeometry.value = '绘制'
+      setTimeout(() => {
+        isDrawing = false
+      }, 500);
     })
   }
 }
@@ -321,10 +362,10 @@ const getCityName = (feature: Feature) => {
 }
 
 const renderMonitors = () => {
+  geometryLayer.getSource()?.clear()
   monitorLayer.getSource()?.clear()
   drawerFormRef.value?.resetFields()
   drawerVisible.value = false
-
 
   // 添加交互
   const translate = new Translate({
@@ -369,6 +410,11 @@ const renderMonitors = () => {
     // 添加到地图
     monitorLayer.getSource()?.addFeatures(features)
   })
+}
+
+// 全屏
+const handleMapScreen = () => {
+  window.open('/mapScreen', '_blank')
 }
 
 // 添加监测点
@@ -499,7 +545,7 @@ onMounted(() => {
             </template>
           </el-dropdown>
         </el-button>
-        <el-button type="success" icon="View">大屏</el-button>
+        <el-button type="success" icon="View" @click="handleMapScreen">大屏</el-button>
       </el-button-group>
     </div>
     <el-drawer v-model="drawerVisible" :modal="false" title="数据面板" modal-class="map-edit-drawer" size="100%">
