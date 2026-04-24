@@ -18,7 +18,9 @@ import { Monitor } from "@/types";
 import type { FeatureLike } from "ol/Feature";
 
 import MonitorCount from '@/components/MonitorCount.vue'
-
+import MonitorArea from '@/components/MonitorArea.vue'
+import SoilQuality from '@/components/SoilQuality.vue'
+import MonthData from '@/components/MonthData.vue'
 
 let timer: ReturnType<typeof setInterval> | null = null;
 let rippleTimer: number
@@ -32,6 +34,9 @@ const isLoading = ref(true)
 const rippleProgress = ref(0)
 const monitorOverlay = ref(null)
 const cityCount = reactive<Record<string, number>>({})
+const cityArea = reactive<Record<string, number>>({})
+const soilQuality = reactive<Record<string, number>>({})
+
 const steps = 10
 const ramp = colormap({
   colormap: 'earth',
@@ -170,6 +175,10 @@ const initMonitors = () => {
     res.forEach((item): Monitor => {
       const city = item.city
       cityCount[city] = (cityCount[city] || 0) + 1
+      cityArea.monitorArea = (cityArea.monitorArea || 0) + item.monitorArea
+      cityArea.allArea = (cityArea.allArea || 0) + item.allArea
+      const qualityName = QUALITY_LEVELS.find(level => level.value === item.quality)?.name
+      soilQuality[qualityName] = (soilQuality[qualityName] || 0) + 1
     })
     const features = new GeoJSON().readFeatures(monitorGeoJSON(res), {
       dataProjection: "EPSG:4326",
@@ -278,12 +287,18 @@ onUnmounted(() => {
         <div class="chart-item">
           <monitor-count :data="cityCount" />
         </div>
-        <div class="chart-item"></div>
-        <div class="chart-item"></div>
+        <div class="chart-item">
+          <MonitorArea :data="cityArea" />
+        </div>
+        <div class="chart-item">
+          <SoilQuality :data="soilQuality" />
+        </div>
       </div>
       <div id="chart-map" class="chart-map" v-loading="isLoading" element-loading-background="transparent"></div>
       <div class="chart-aside">
-        <div class="chart-item"></div>
+        <div class="chart-item">
+          <monthData />
+        </div>
         <div class="chart-item"></div>
         <div class="chart-item"></div>
       </div>

@@ -42,3 +42,10 @@ export const deleteMonitor = async (id: number) => {
     }
     return res.json()
 }
+export const getMonthData = async () => {
+    const res = await fetch('http://localhost:3000/months')
+    if (!res.ok) {
+        throw new Error('Network response was not ok')
+    }
+    return res.json()
+}

@@ -9,3 +9,8 @@ export interface Monitor {
     monitorArea: number
     allArea: number
 }
+export interface Month {
+    id: number
+    name: string
+    count: number
+}

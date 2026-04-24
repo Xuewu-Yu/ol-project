@@ -3,19 +3,17 @@ import { onMounted, onUnmounted, computed, ref, watch } from "vue";
 import * as echarts from "echarts";
 
 let chart: echarts.ECharts;
-const monitorArea = ref();
+const soilQuality = ref();
 
 const { data } = defineProps<{
   data: Record<string, number>;
 }>();
 
 const pieData = computed(() => {
-  const area = Math.round(data.monitorArea / data.allArea * 100)
-  const unArea = 100 - area
-  return [
-    { value: area, name: '已监测面积' },
-    { value: unArea, name: '未监测面积' }
-  ]
+  return Object.entries(data).map(item => ({
+    name: item[0],
+    value: item[1]
+  }))
 })
 const updateChart = () => {
   if (!chart) return
@@ -28,15 +26,15 @@ const updateChart = () => {
       top: 20,
       left: 20,
     },
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br />{b}: {d}%'
-    },
+    tooltip: {},
     series: [
       {
-        name: '覆盖率',
+        name: '等级情况',
         type: 'pie',
-        radius: '50%',
+        radius: ['40%', '70%'],
+        center: ['50%', '75%'],
+        startAngle: 180,
+        endAngle: 360,
         label: {
           fontSize: 14,
           color: '#ededed',
@@ -54,8 +52,8 @@ const resizeChart = () => {
 watch(() => data, updateChart, { deep: true })
 
 onMounted(() => {
-  if (monitorArea.value) {
-    chart = echarts.init(monitorArea.value);
+  if (soilQuality.value) {
+    chart = echarts.init(soilQuality.value);
     updateChart();
     window.addEventListener("resize", resizeChart);
   }
@@ -66,10 +64,10 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <div ref="monitorArea" class="monitor-area"></div>
+  <div ref="soilQuality" class="soil-quality"></div>
 </template>
 <style scoped>
-.monitor-area {
+.soil-quality {
   width: 100%;
   height: 100%;
 }
