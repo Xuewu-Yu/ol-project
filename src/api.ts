@@ -49,3 +49,10 @@ export const getMonthData = async () => {
     }
     return res.json()
 }
+export const getWaters = async () => {
+    const res = await fetch('http://localhost:3000/waters')
+    if (!res.ok) {
+        throw new Error('Network response was not ok')
+    }
+    return res.json()
+}

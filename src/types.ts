@@ -14,3 +14,8 @@ export interface Month {
     name: string
     count: number
 }
+export interface Water {
+    id: number
+    time: string
+    waterLevel: number
+}

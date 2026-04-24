@@ -21,6 +21,9 @@ import MonitorCount from '@/components/MonitorCount.vue'
 import MonitorArea from '@/components/MonitorArea.vue'
 import SoilQuality from '@/components/SoilQuality.vue'
 import MonthData from '@/components/MonthData.vue'
+import MonitorOpen from '@/components/MonitorOpen.vue'
+import WaterChange from '@/components/WaterChange.vue'
+
 
 let timer: ReturnType<typeof setInterval> | null = null;
 let rippleTimer: number
@@ -36,6 +39,7 @@ const monitorOverlay = ref(null)
 const cityCount = reactive<Record<string, number>>({})
 const cityArea = reactive<Record<string, number>>({})
 const soilQuality = reactive<Record<string, number>>({})
+const monitorOpen = reactive<Record<string, number>>({})
 
 const steps = 10
 const ramp = colormap({
@@ -179,6 +183,7 @@ const initMonitors = () => {
       cityArea.allArea = (cityArea.allArea || 0) + item.allArea
       const qualityName = QUALITY_LEVELS.find(level => level.value === item.quality)?.name
       soilQuality[qualityName] = (soilQuality[qualityName] || 0) + 1
+      monitorOpen[item.status] = (monitorOpen[item.status] || 0) + 1
     })
     const features = new GeoJSON().readFeatures(monitorGeoJSON(res), {
       dataProjection: "EPSG:4326",
@@ -299,8 +304,12 @@ onUnmounted(() => {
         <div class="chart-item">
           <monthData />
         </div>
-        <div class="chart-item"></div>
-        <div class="chart-item"></div>
+        <div class="chart-item">
+          <MonitorOpen :data="monitorOpen" />
+        </div>
+        <div class="chart-item">
+          <WaterChange />
+        </div>
       </div>
     </div>
   </div>
