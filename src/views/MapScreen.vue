@@ -302,7 +302,7 @@ onUnmounted(() => {
       <div id="chart-map" class="chart-map" v-loading="isLoading" element-loading-background="transparent"></div>
       <div class="chart-aside">
         <div class="chart-item">
-          <monthData />
+          <MonthData />
         </div>
         <div class="chart-item">
           <MonitorOpen :data="monitorOpen" />
